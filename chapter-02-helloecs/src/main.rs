@@ -1,7 +1,7 @@
-use rltk::{Console, GameState, Rltk, RGB, VirtualKeyCode};
+use rltk::{Console, GameState, Rltk, VirtualKeyCode, RGB};
 use specs::prelude::*;
-use std::cmp::{max, min};
 use specs_derive::*;
+use std::cmp::{max, min};
 
 #[derive(Component)]
 struct Position {
@@ -19,11 +19,14 @@ struct Renderable {
 #[derive(Component)]
 struct LeftMover {}
 
+#[derive(Component)]
+struct RightMover {}
+
 #[derive(Component, Debug)]
 struct Player {}
 
 struct State {
-    ecs: World
+    ecs: World,
 }
 
 fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
@@ -31,7 +34,7 @@ fn try_move_player(delta_x: i32, delta_y: i32, ecs: &mut World) {
     let mut players = ecs.write_storage::<Player>();
 
     for (_player, pos) in (&mut players, &mut positions).join() {
-        pos.x = min(79 , max(0, pos.x + delta_x));
+        pos.x = min(79, max(0, pos.x + delta_x));
         pos.y = min(49, max(0, pos.y + delta_y));
     }
 }
@@ -51,7 +54,7 @@ fn player_input(gs: &mut State, ctx: &mut Rltk) {
 }
 
 impl GameState for State {
-    fn tick(&mut self, ctx : &mut Rltk) {
+    fn tick(&mut self, ctx: &mut Rltk) {
         ctx.cls();
 
         player_input(self, ctx);
@@ -66,23 +69,41 @@ impl GameState for State {
     }
 }
 
+struct RightWalker {}
+
+impl<'a> System<'a> for RightWalker {
+    type SystemData = (ReadStorage<'a, RightMover>, WriteStorage<'a, Position>);
+
+    fn run(&mut self, (righty, mut pos): Self::SystemData) {
+        for (_righty, pos) in (&righty, &mut pos).join() {
+            pos.x += 1;
+            if pos.x > 79 {
+                pos.x = 0;
+            }
+        }
+    }
+}
+
 struct LeftWalker {}
 
 impl<'a> System<'a> for LeftWalker {
-    type SystemData = (ReadStorage<'a, LeftMover>,
-                        WriteStorage<'a, Position>);
+    type SystemData = (ReadStorage<'a, LeftMover>, WriteStorage<'a, Position>);
 
-    fn run(&mut self, (lefty, mut pos) : Self::SystemData) {
-        for (_lefty,pos) in (&lefty, &mut pos).join() {
+    fn run(&mut self, (lefty, mut pos): Self::SystemData) {
+        for (_lefty, pos) in (&lefty, &mut pos).join() {
             pos.x -= 1;
-            if pos.x < 0 { pos.x = 79; }
+            if pos.x < 0 {
+                pos.x = 79;
+            }
         }
     }
 }
 
 impl State {
     fn run_systems(&mut self) {
-        let mut lw = LeftWalker{};
+        let mut lw = LeftWalker {};
+        let mut rw = RightWalker {};
+        rw.run_now(&self.ecs);
         lw.run_now(&self.ecs);
         self.ecs.maintain();
     }
@@ -93,12 +114,11 @@ fn main() {
     let context = RltkBuilder::simple80x50()
         .with_title("Roguelike Tutorial")
         .build();
-    let mut gs = State {
-        ecs: World::new()
-    };
+    let mut gs = State { ecs: World::new() };
     gs.ecs.register::<Position>();
     gs.ecs.register::<Renderable>();
     gs.ecs.register::<LeftMover>();
+    gs.ecs.register::<RightMover>();
     gs.ecs.register::<Player>();
 
     gs.ecs
@@ -109,20 +129,33 @@ fn main() {
             fg: RGB::named(rltk::YELLOW),
             bg: RGB::named(rltk::BLACK),
         })
-        .with(Player{})
+        .with(Player {})
         .build();
 
     for i in 0..10 {
         gs.ecs
-        .create_entity()
-        .with(Position { x: i * 7, y: 20 })
-        .with(Renderable {
-            glyph: rltk::to_cp437('☺'),
-            fg: RGB::named(rltk::RED),
-            bg: RGB::named(rltk::BLACK),
-        })
-        .with(LeftMover{})
-        .build();
+            .create_entity()
+            .with(Position { x: i * 7, y: 20 })
+            .with(Renderable {
+                glyph: rltk::to_cp437('☺'),
+                fg: RGB::named(rltk::RED),
+                bg: RGB::named(rltk::BLACK),
+            })
+            .with(LeftMover {})
+            .build();
+    }
+
+    for i in 0..10 {
+        gs.ecs
+            .create_entity()
+            .with(Position { x: i * 7, y: 28 })
+            .with(Renderable {
+                glyph: rltk::to_cp437('►'),
+                fg: RGB::named(rltk::BLUE),
+                bg: RGB::named(rltk::BLACK),
+            })
+            .with(RightMover {})
+            .build();
     }
 
     rltk::main_loop(context, gs);
