@@ -19,7 +19,7 @@ let mut context = RltkBuilder::simple(80, 60)
     .with_title("Roguelike Tutorial")
     .with_font("vga8x16.png", 8, 16)
     .with_sparse_console(80, 30, "vga8x16.png")
-    .build();
+    .build()?;
 ```
 
 The main loop's "clear screen" needs to be expanded to clear both layers. In `main.rs` (the `tick` function), we have a bit of code we haven't touched in 70 chapters - clearing the screen at the beginning of a frame. Now we want to clear both consoles:
@@ -59,7 +59,7 @@ Since the new code handles rendering, it's very easy to draw the log file! Chang
 
 ```rust
 // Draw the log
-gamelog::print_log(&mut ctx.consoles[1].console, Point::new(1, 23));
+gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[1].console, Point::new(1, 23));
 ```
 
 If you `cargo run` now, you'll see a much easier to read log section:
@@ -515,7 +515,7 @@ pub fn draw_ui(ecs: &World, ctx : &mut Rltk) {
     y += consumables(ecs, &mut draw_batch, &player_entity, y);
     spells(ecs, &mut draw_batch, &player_entity, y);
     status(ecs, &mut draw_batch, &player_entity);
-    gamelog::print_log(&mut ctx.consoles[1].console, Point::new(1, 23));
+    gamelog::print_log(&mut rltk::BACKEND_INTERNAL.lock().consoles[1].console, Point::new(1, 23));
     draw_tooltips(ecs, ctx);
 
     draw_batch.submit(5000);
@@ -541,7 +541,7 @@ pub fn menu_box<T: ToString>(draw_batch: &mut DrawBatch, x: i32, y: i32, width: 
     );
 }
 
-pub fn menu_option<T:ToString>(draw_batch: &mut DrawBatch, x: i32, y: i32, hotkey: u8, text: T) {
+pub fn menu_option<T:ToString>(draw_batch: &mut DrawBatch, x: i32, y: i32, hotkey: rltk::FontCharType, text: T) {
     draw_batch.set(
         Point::new(x, y), 
         ColorPair::new(RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)),
@@ -653,7 +653,7 @@ pub fn item_result_menu<S: ToString>(
     let mut item_list : Vec<Entity> = Vec::new();
     let mut j = 0;
     for item in items {
-        menu_option(draw_batch, 17, y, 97+j as u8, &item.1);
+        menu_option(draw_batch, 17, y, 97+j as rltk::FontCharType, &item.1);
         item_list.push(item.0);
         y += 1;
         j += 1;
@@ -1164,7 +1164,7 @@ fn vendor_sell_menu(gs : &mut State, ctx : &mut Rltk, _vendor : Entity, _mode : 
     let mut j = 0;
     for (entity, _pack, item) in (&entities, &backpack, &items).join().filter(|item| item.1.owner == *player_entity ) {
         draw_batch.set(Point::new(17, y), ColorPair::new(RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)), rltk::to_cp437('('));
-        draw_batch.set(Point::new(18, y), ColorPair::new(RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK)), 97+j as u8);
+        draw_batch.set(Point::new(18, y), ColorPair::new(RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK)), 97+j as rltk::FontCharType);
         draw_batch.set(Point::new(19, y), ColorPair::new(RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)), rltk::to_cp437(')'));
 
         draw_batch.print_color(
@@ -1217,7 +1217,7 @@ fn vendor_buy_menu(gs : &mut State, ctx : &mut Rltk, vendor : Entity, _mode : Ve
 
     for (j,sale) in inventory.iter().enumerate() {
         draw_batch.set(Point::new(17, y), ColorPair::new(RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)), rltk::to_cp437('('));
-        draw_batch.set(Point::new(18, y), ColorPair::new(RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK)), 97+j as u8);
+        draw_batch.set(Point::new(18, y), ColorPair::new(RGB::named(rltk::YELLOW), RGB::named(rltk::BLACK)), 97+j as rltk::FontCharType);
         draw_batch.set(Point::new(19, y), ColorPair::new(RGB::named(rltk::WHITE), RGB::named(rltk::BLACK)), rltk::to_cp437(')'));
 
         draw_batch.print(Point::new(21, y), &sale.0);

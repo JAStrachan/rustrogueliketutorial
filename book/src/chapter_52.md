@@ -38,8 +38,9 @@ In `main.rs`, the first thing our `main` function does is to bootstrap RLTK. We 
 ```rust
 use rltk::RltkBuilder;
     let mut context = RltkBuilder::simple(80, 60)
+        .unwrap()
         .with_title("Roguelike Tutorial")
-        .build();
+        .build()?;
 ```
 
 If you `cargo run` now, you'll see a bigger console - and nothing making use of the extra space!

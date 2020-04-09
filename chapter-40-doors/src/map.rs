@@ -1,4 +1,4 @@
-use rltk::{ RGB, Rltk, Console, BaseMap, Algorithm2D, Point };
+use rltk::{ RGB, Rltk, BaseMap, Algorithm2D, Point };
 use specs::prelude::*;
 use serde::{Serialize, Deserialize};
 use std::collections::HashSet;
@@ -82,8 +82,8 @@ impl BaseMap for Map {
         rltk::DistanceAlg::Pythagoras.distance2d(p1, p2)
     }
 
-    fn get_available_exits(&self, idx:usize) -> Vec<(usize, f32)> {
-        let mut exits : Vec<(usize, f32)> = Vec::new();
+    fn get_available_exits(&self, idx:usize) -> rltk::SmallVec<[(usize, f32); 10]> {
+        let mut exits = rltk::SmallVec::new();
         let x = idx as i32 % self.width;
         let y = idx as i32 / self.width;
         let w = self.width as usize;
@@ -115,7 +115,7 @@ fn is_revealed_and_wall(map: &Map, x: i32, y: i32) -> bool {
     map.tiles[idx] == TileType::Wall && map.revealed_tiles[idx]
 }
 
-fn wall_glyph(map : &Map, x: i32, y:i32) -> u8 {
+fn wall_glyph(map : &Map, x: i32, y:i32) -> rltk::FontCharType {
     if x < 1 || x > map.width-2 || y < 1 || y > map.height-2 as i32 { return 35; }
     let mut mask : u8 = 0;
 

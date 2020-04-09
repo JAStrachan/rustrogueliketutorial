@@ -1,4 +1,4 @@
-use rltk::{Console, GameState, Rltk, RGB, VirtualKeyCode};
+use rltk::{GameState, Rltk, RGB, VirtualKeyCode};
 use specs::prelude::*;
 use specs_derive::*;
 use std::cmp::{min, max};
@@ -11,7 +11,7 @@ struct Position {
 
 #[derive(Component)]
 struct Renderable {
-    glyph: u8,
+    glyph: rltk::FontCharType,
     fg: RGB,
     bg: RGB,
 }
@@ -137,11 +137,11 @@ impl State {
     }
 }
 
-fn main() {
+fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let context = RltkBuilder::simple80x50()
         .with_title("Roguelike Tutorial")
-        .build();
+        .build()?;
     let mut gs = State {
         ecs: World::new()
     };
@@ -162,5 +162,5 @@ fn main() {
         .with(Player{})
         .build();
 
-    rltk::main_loop(context, gs);
+    rltk::main_loop(context, gs)
 }

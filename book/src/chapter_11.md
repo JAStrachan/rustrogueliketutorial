@@ -166,9 +166,9 @@ That's a bit of a mouthful, but it displays menu options and lets you select the
 
 ```toml
 [dependencies]
-rltk = { version = "0.7.0", features = ["serde"] }
+rltk = { version = "0.8.0", features = ["serde"] }
 specs = { version = "0.16.1", features = ["serde"] }
-specs-derive = "0.4.0"
+specs-derive = "0.4.1"
 serde= { version = "1.0.93", features = ["derive"] }
 serde_json = "1.0.39"
 ```

@@ -1,4 +1,4 @@
-use rltk::{Console, GameState, Rltk, RGB, Point};
+use rltk::{GameState, Rltk, RGB, Point};
 use specs::prelude::*;
 mod components;
 pub use components::*;
@@ -90,11 +90,11 @@ impl GameState for State {
     }
 }
 
-fn main() {
+fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let context = RltkBuilder::simple80x50()
         .with_title("Roguelike Tutorial")
-        .build();
+        .build()?;
     let mut gs = State {
         ecs: World::new(),
     };
@@ -130,7 +130,7 @@ fn main() {
     for (i,room) in map.rooms.iter().skip(1).enumerate() {
         let (x,y) = room.center();
 
-        let glyph : u8;
+        let glyph : rltk::FontCharType;
         let name : String;
         let roll = rng.roll_dice(1, 2);
         match roll {
@@ -158,5 +158,5 @@ fn main() {
     gs.ecs.insert(player_entity);
     gs.ecs.insert(RunState::PreRun);
 
-    rltk::main_loop(context, gs);
+    rltk::main_loop(context, gs)
 }

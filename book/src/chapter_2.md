@@ -48,16 +48,16 @@ It's important to know that ECS is just one way of handling composition. There a
 To start, we want to tell Cargo that we're going to use Specs. Open your `Cargo.toml` file, and change the `dependencies` section to look like this:
 ```toml
 [dependencies]
-rltk = { version = "0.7.0" }
+rltk = { version = "0.8.0" }
 specs = "0.16.1"
-specs-derive = "0.4.0"
+specs-derive = "0.4.1"
 ```
 
 This is pretty straightforward: we're telling Rust that we still want to use RLTK, and we're also asking for specs (the version number is current at the time of writing; you can check for new ones by typing `cargo search specs`). We're also adding `specs-derive` - which provides some helper code to reduce the amount of boilerplate typing you have to do.
 
 At the top of `main.rs` we add a few lines of code:
 ```rust
-use rltk::{Console, GameState, Rltk, RGB, VirtualKeyCode};
+use rltk::{GameState, Rltk, RGB, VirtualKeyCode};
 use specs::prelude::*;
 use std::cmp::{max, min};
 use specs_derive::Component;
@@ -116,7 +116,7 @@ A second part of putting a character on the screen is *what character should we 
 ```rust
 #[derive(Component)]
 struct Renderable {
-    glyph: u8,
+    glyph: rltk::FontCharType,
     fg: RGB,
     bg: RGB,
 }
@@ -237,7 +237,7 @@ With that in place, *any* entity that has both a `Position` and a `Renderable` w
 If you've typed all of that in correctly, your `main.rs` now looks like this:
 
 ```rust
-use rltk::{Console, GameState, Rltk, RGB};
+use rltk::{GameState, Rltk, RGB};
 use specs::prelude::*;
 use std::cmp::{max, min};
 use specs_derive::Component;
@@ -250,7 +250,7 @@ struct Position {
 
 #[derive(Component)]
 struct Renderable {
-    glyph: u8,
+    glyph: rltk::FontCharType,
     fg: RGB,
     bg: RGB,
 }
@@ -271,11 +271,11 @@ impl GameState for State {
     }
 }
 
-fn main() {
+fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let context = RltkBuilder::simple80x50()
         .with_title("Roguelike Tutorial")
-        .build();
+        .build()?;
     let mut gs = State {
         ecs: World::new()
     };
@@ -304,7 +304,7 @@ fn main() {
         .build();
     }
 
-    rltk::main_loop(context, gs);
+    rltk::main_loop(context, gs)
 }
 ```
 
@@ -405,7 +405,7 @@ The nice thing is that this will run *all* systems we register into our dispatch
 
 So your code now looks like this:
 ```rust
-use rltk::{Console, GameState, Rltk, RGB};
+use rltk::{GameState, Rltk, RGB};
 use specs::prelude::*;
 use std::cmp::{max, min};
 use specs_derive::Component;
@@ -418,7 +418,7 @@ struct Position {
 
 #[derive(Component)]
 struct Renderable {
-    glyph: u8,
+    glyph: rltk::FontCharType,
     fg: RGB,
     bg: RGB,
 }
@@ -467,11 +467,11 @@ impl State {
     }
 }
 
-fn main() {
+fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let context = RltkBuilder::simple80x50()
         .with_title("Roguelike Tutorial")
-        .build();
+        .build()?;
     let mut gs = State {
         ecs: World::new()
     };
@@ -502,7 +502,7 @@ fn main() {
         .build();
     }
 
-    rltk::main_loop(context, gs);
+    rltk::main_loop(context, gs)
 }
 ```
 
@@ -599,7 +599,7 @@ If you run your program (with `cargo run`), you now have a keyboard controlled `
 The source code for this completed example may be found ready-to-run in `chapter-02-helloecs`. It looks like this:
 
 ```rust
-use rltk::{Console, GameState, Rltk, RGB, VirtualKeyCode};
+use rltk::{GameState, Rltk, RGB, VirtualKeyCode};
 use specs::prelude::*;
 use std::cmp::{max, min};
 use specs_derive::Component;
@@ -614,7 +614,7 @@ struct Position {
 
 #[derive(Component)]
 struct Renderable {
-    glyph: u8,
+    glyph: rltk::FontCharType,
     fg: RGB,
     bg: RGB,
 }
@@ -691,11 +691,11 @@ impl State {
     }
 }
 
-fn main() {
+fn main() -> rltk::BError {
     use rltk::RltkBuilder;
     let context = RltkBuilder::simple80x50()
         .with_title("Roguelike Tutorial")
-        .build();
+        .build()?;
     let mut gs = State {
         ecs: World::new()
     };
@@ -728,7 +728,7 @@ fn main() {
         .build();
     }
 
-    rltk::main_loop(context, gs);
+    rltk::main_loop(context, gs)
 }
 ```
 
